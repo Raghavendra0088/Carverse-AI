@@ -1,0 +1,409 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CARVERSE Grand Prix</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,600;1,500;1,600;1,700&family=VT323&display=swap');
+
+:root{
+  --bg:#eaf3f0; --tile:#ffffff; --mint:#d8ede8; --mint2:#c3e7e1;
+  --accent:#0a9d8e; --accent-d:#067a6e; --ink:#151b18; --muted:#6d7a74;
+  --line:#d0e6df; --shadow:0 12px 34px rgba(16,60,50,.07);
+  --blue:#2a78d6; --amber:#eda100; --red:#e34948; --good:#1baf7a;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--ink);
+  -webkit-font-smoothing:antialiased;overflow-x:hidden}
+.serif{font-family:'Playfair Display',serif;font-style:italic;font-weight:600}
+.led{font-family:'VT323',monospace;letter-spacing:2px;line-height:.9}
+::selection{background:var(--accent);color:#fff}
+
+/* dotted texture behind everything */
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.5;
+  background-image:radial-gradient(var(--line) 1px,transparent 1px);background-size:26px 26px;
+  mask-image:radial-gradient(circle at 50% 0,#000,transparent 75%)}
+#confetti{position:fixed;inset:0;z-index:90;pointer-events:none}
+#tip{position:fixed;z-index:95;pointer-events:none;background:var(--ink);color:#fff;border-radius:9px;
+  padding:7px 11px;font-size:.8rem;box-shadow:var(--shadow);opacity:0;transition:opacity .12s;max-width:230px}
+
+/* ---------- nav ---------- */
+.nav{position:sticky;top:0;z-index:50;background:rgba(234,243,240,.82);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--line)}
+.nav .in{max-width:1200px;margin:0 auto;padding:12px 22px;display:flex;align-items:center;gap:14px}
+.brand{font-weight:900;letter-spacing:-.5px;font-size:1.05rem}
+.brand b{color:var(--accent)}
+.navlinks{display:flex;gap:4px;margin-left:auto;flex-wrap:wrap}
+.navlinks a{font-size:.82rem;font-weight:600;color:var(--muted);text-decoration:none;padding:7px 13px;border-radius:9px;transition:.15s}
+.navlinks a:hover{color:var(--ink);background:#fff}
+.navlinks a.on{color:var(--accent);background:#fff;box-shadow:var(--shadow)}
+.clock{margin-left:8px;background:var(--ink);color:var(--accent);border-radius:9px;padding:6px 12px;
+  font-family:'VT323';font-size:1.1rem;letter-spacing:2px}
+
+/* ---------- layout ---------- */
+.wrap{max-width:1200px;margin:0 auto;padding:0 22px 90px;position:relative;z-index:1}
+.grid{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-top:14px}
+.tile{background:var(--tile);border:1px solid var(--line);border-radius:20px;padding:22px;
+  box-shadow:var(--shadow);opacity:0;transform:translateY(18px);transition:opacity .6s,transform .6s,box-shadow .2s;grid-column:span 2}
+.tile.in{opacity:1;transform:none}
+.tile:hover{box-shadow:0 16px 40px rgba(16,60,50,.12)}
+.tile.mint{background:var(--mint)} .tile.mint2{background:var(--mint2)}
+.tile.acc{background:var(--accent);color:#fff;border-color:var(--accent)}
+.tile.acc .lab,.tile.acc .muted{color:#c8f0ea}
+.s2{grid-column:span 2}.s3{grid-column:span 3}.s4{grid-column:span 4}.s6{grid-column:span 6}
+.lab{font-size:.68rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted)}
+.muted{color:var(--muted)}
+
+/* section header code-style */
+.sec{grid-column:span 6;display:flex;align-items:center;gap:14px;margin-top:28px}
+.sec h2{font-size:1.05rem;font-weight:800;letter-spacing:1px}
+.sec .br{color:var(--accent);font-weight:800}
+.sec .hint{color:var(--muted);font-size:.86rem;font-weight:500}
+.sec .rule{flex:1;height:1px;background:var(--line)}
+
+/* ---------- hero ---------- */
+.hero-h{font-size:clamp(2.1rem,4.4vw,3.4rem);font-weight:800;line-height:1.04;letter-spacing:-1px}
+.hero-h .serif{font-size:1.04em}
+.hero-h em.g{color:var(--accent);font-style:normal}
+.hero-sub{color:var(--muted);font-size:1.05rem;line-height:1.55;margin-top:16px;max-width:42ch}
+.tag{display:inline-block;font-size:.72rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;
+  color:var(--accent);border:1px solid var(--accent);border-radius:999px;padding:5px 13px;margin-bottom:18px}
+.kpi-led{font-family:'VT323';font-size:3.2rem;line-height:.85;color:var(--ink)}
+.tile.acc .kpi-led{color:#fff}
+.kpi-cap{font-size:.72rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-top:10px}
+.kpi-sub{font-size:.78rem;color:var(--muted);margin-top:2px}
+.narr{font-family:'Playfair Display',serif;font-style:italic;font-size:1.15rem;line-height:1.4}
+.narr b{font-style:normal;font-weight:700}
+
+/* ---------- race ---------- */
+.finish-note{text-align:right;color:var(--muted);font-size:.72rem;letter-spacing:2px;margin-bottom:10px}
+.lane{display:grid;grid-template-columns:130px 1fr 54px;align-items:center;gap:12px;margin:11px 0}
+.lane-name{font-size:.82rem;font-weight:700;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lane-track{position:relative;height:24px;border-radius:999px;background:var(--bg);border:1px solid var(--line)}
+.lane-track::after{content:'';position:absolute;right:0;top:-5px;bottom:-5px;width:5px;border-radius:3px;
+  background:repeating-linear-gradient(0deg,var(--ink) 0 4px,#fff 4px 8px)}
+.lane-fill{position:absolute;left:0;top:0;bottom:0;width:0;border-radius:999px;
+  background:linear-gradient(90deg,var(--mint2),var(--accent));transition:width 1.5s cubic-bezier(.2,.85,.25,1)}
+.car{position:absolute;top:50%;left:0;transform:translate(-50%,-50%);font-size:1.25rem;
+  transition:left 1.5s cubic-bezier(.2,.85,.25,1);z-index:2;cursor:pointer}
+.in .lane-fill{width:var(--p)} .in .car{left:var(--p)}
+.lane-val{font-family:'VT323';font-size:1.15rem;color:var(--accent-d);font-weight:700}
+
+.vbars{display:flex;align-items:flex-end;gap:9px;height:190px;padding-top:22px}
+.vbar{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%}
+.vbar .fill{width:100%;border-radius:8px 8px 3px 3px;height:0;transition:height 1s cubic-bezier(.2,.85,.25,1);position:relative}
+.in .vbar .fill{height:var(--h)}
+.vbar .n{position:absolute;top:-19px;left:0;right:0;text-align:center;font-family:'VT323';font-size:1rem;color:var(--ink)}
+.vbar .cap{margin-top:7px;font-size:.62rem;color:var(--muted);text-align:center;line-height:1.1;height:24px;font-weight:600}
+
+.hbar{display:grid;grid-template-columns:130px 1fr;align-items:center;gap:11px;margin:8px 0}
+.hbar .hl{font-size:.8rem;font-weight:600;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hbar .htrack{background:var(--bg);border-radius:8px;height:22px;position:relative;overflow:hidden;border:1px solid var(--line)}
+.hbar .hfill{height:100%;width:0;border-radius:7px;transition:width 1.1s cubic-bezier(.2,.85,.25,1);
+  display:flex;align-items:center;justify-content:flex-end;padding-right:8px}
+.in .hbar .hfill{width:var(--w)}
+.hbar .hfill span{font-family:'VT323';font-size:.95rem;color:#fff;white-space:nowrap}
+.frow{display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--line)}
+.frow:last-child{border:0}
+.frow .d{font-family:'VT323';font-size:1.05rem;color:var(--accent-d);width:46px}
+.frow .b{flex:1;font-weight:700;font-size:.88rem}
+.frow .br{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+
+/* ---------- leaderboard ---------- */
+.seg{display:inline-flex;gap:3px;background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:4px}
+.seg button{font-family:'Inter';font-weight:600;color:var(--muted);background:none;border:none;padding:7px 15px;border-radius:999px;cursor:pointer;font-size:.86rem;transition:.15s}
+.seg button.on{background:var(--accent);color:#fff}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin:14px 0}
+.chip{font-size:.76rem;font-weight:600;color:var(--muted);border:1px solid var(--line);background:#fff;border-radius:999px;padding:5px 12px;cursor:pointer;transition:.15s}
+.chip:hover{border-color:var(--accent);color:var(--ink)}
+.chip.on{color:#fff;background:var(--accent);border-color:var(--accent)}
+.podium{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;align-items:end;margin:6px 0 18px}
+.pod{background:var(--mint);border:1px solid var(--line);border-radius:16px 16px 8px 8px;padding:16px 10px;text-align:center}
+.pod .m{font-size:1.8rem}.pod .pn{font-weight:800;margin-top:4px;font-size:.92rem;line-height:1.15}
+.pod .pd{font-size:.66rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-top:2px}
+.pod .pp{font-family:'VT323';font-size:1.7rem;color:var(--accent-d);margin-top:8px}
+.pod.p1{background:var(--mint2);border-color:var(--accent);height:158px}.pod.p2{height:134px}.pod.p3{height:120px}
+.lrow{display:flex;align-items:center;gap:13px;background:#fff;border:1px solid var(--line);border-left:3px solid var(--line);
+  border-radius:12px;padding:9px 15px;margin-bottom:6px;transition:.15s}
+.lrow:hover{border-left-color:var(--accent);transform:translateX(3px)}
+.lrow .rk{font-family:'VT323';font-size:1.15rem;width:30px;color:var(--muted)}
+.lrow .nm{flex:1;font-weight:700;font-size:.92rem}
+.lrow .dp{font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:.8px}
+.lrow .pt{font-family:'VT323';font-size:1.2rem;color:var(--accent-d)}
+
+/* ---------- quests ---------- */
+.quest .qt{font-weight:800;font-size:1rem;display:flex;justify-content:space-between}
+.quest .qd{color:var(--muted);font-size:.86rem;margin:5px 0 14px;min-height:2.4em}
+.qbar{height:12px;border-radius:999px;background:var(--bg);overflow:hidden;border:1px solid var(--line)}
+.qbar i{display:block;height:100%;width:0;border-radius:999px;background:linear-gradient(90deg,var(--good),var(--accent));transition:width 1.2s cubic-bezier(.2,.85,.25,1)}
+.in .qbar i{width:var(--w)}
+.qmeta{display:flex;justify-content:space-between;margin-top:9px;font-size:.82rem;color:var(--muted)}
+.qmeta b{font-family:'VT323';font-size:1.15rem;color:var(--accent-d)}
+.done{color:var(--good)}
+.hp{height:18px;border-radius:999px;background:var(--bg);overflow:hidden;border:1px solid var(--line);margin:12px 0 10px}
+.hp i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--red),var(--amber));transition:width 1.3s ease}
+.in .hp i{width:var(--w)}
+.pill{display:inline-block;background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:4px 12px;font-size:.8rem;margin:4px 5px 0 0;font-weight:600}
+
+/* ---------- anti-gaming ---------- */
+.legend{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:14px;font-size:.82rem;color:var(--muted);font-weight:600}
+.legend i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:6px}
+.guard{background:var(--mint);border:1px solid var(--line);border-radius:14px;padding:15px}
+.guard .gn{font-weight:800;font-size:.9rem;margin-bottom:5px}
+.guard .gn b{color:var(--accent);margin-right:7px}
+.guard p{color:var(--muted);font-size:.84rem;line-height:1.45}
+
+/* ---------- rules ---------- */
+.step{background:var(--mint);border:1px solid var(--line);border-radius:14px;padding:15px;position:relative}
+.step .num{font-family:'VT323';font-size:2rem;color:var(--accent);position:absolute;top:6px;right:14px;opacity:.5}
+.step p{font-size:.86rem;line-height:1.45;position:relative}
+table{width:100%;border-collapse:collapse;font-size:.88rem}
+th{text-align:left;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:1px;font-size:.68rem;padding:9px 11px;border-bottom:2px solid var(--line)}
+td{padding:9px 11px;border-bottom:1px solid var(--line)}
+tr:hover td{background:var(--mint)}
+.tier{font-family:'VT323';font-size:1rem;padding:1px 8px;border-radius:6px}
+.tS{background:#fbe0e0;color:#b81e1e}.tA{background:#fbeecb;color:#8a5d00}.tB{background:#d9e9fb;color:#1c56a3}
+.pts{font-family:'VT323';font-size:1.15rem;color:var(--accent-d);text-align:right}
+.mono{font-family:ui-monospace,'Cascadia Code',monospace;font-size:.8rem}
+.foot{grid-column:span 6;text-align:center;color:var(--muted);font-size:.8rem;margin-top:36px}
+
+.subgrid{grid-column:1 / -1;display:grid;gap:14px}
+.subgrid.c2{grid-template-columns:repeat(2,1fr)}
+.subgrid.c3{grid-template-columns:repeat(3,1fr)}
+.subgrid .tile{grid-column:auto}
+@media(max-width:860px){.grid{grid-template-columns:repeat(2,1fr)}.navlinks{display:none}
+  .lane{grid-template-columns:86px 1fr 42px}.lane-name{font-size:.68rem}
+  .podium{grid-template-columns:1fr}
+  .subgrid.c2,.subgrid.c3{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<canvas id="confetti"></canvas>
+<div id="tip"></div>
+
+<div class="nav"><div class="in">
+  <div class="brand">CARVERSE<b>/</b>GP</div>
+  <nav class="navlinks" id="nav">
+    <a href="#hero" class="on">&lt; home /&gt;</a>
+    <a href="#track">&lt; track /&gt;</a>
+    <a href="#lead">&lt; leaderboard /&gt;</a>
+    <a href="#quest">&lt; quests /&gt;</a>
+    <a href="#anti">&lt; anti-gaming /&gt;</a>
+    <a href="#rules">&lt; scoring /&gt;</a>
+  </nav>
+  <div class="clock" id="clock" title="your session time">00:00</div>
+</div></div>
+
+<div class="wrap">
+  <!-- HERO -->
+  <div class="grid" id="hero">
+    <div class="tile s4">
+      <span class="tag">Carverse Mobility · Dealership Gamification</span>
+      <div class="hero-h">Move the metal,<br><span class="serif">beautifully</span>. Every booking is a <em class="g">race car</em>.</div>
+      <p class="hero-sub">Departments are the pit crew who move it from enquiry to delivery — cleanly and fast. We reward <b style="color:var(--ink)">crossings, not clicks</b>. Nobody wins the finish line alone.</p>
+    </div>
+    <div class="tile s2 acc" id="kDelivered" style="cursor:pointer">
+      <div class="kpi-led" data-t="0">0</div><div class="kpi-cap">Delivered</div><div class="kpi-sub" style="color:#c8f0ea">cars across the line 🏁 — tap me</div>
+    </div>
+    <div class="tile s2"><div class="kpi-led" data-t="0" id="kNoise">0</div><div class="kpi-cap">Noise ignored</div><div class="kpi-sub">earns zero points</div></div>
+    <div class="tile s2"><div class="kpi-led" data-t="0" id="kBookings">0</div><div class="kpi-cap">Bookings on track</div><div class="kpi-sub">unique race cars</div></div>
+    <div class="tile s2 mint2"><div class="lab">Race Engineer</div><p class="narr" style="margin-top:8px">“We logged <b id="nEvents">0</b> events. Only <b id="nScored">16</b> of <b>2,000+</b> action types ever touch the score.”</p></div>
+  </div>
+
+  <!-- TRACK -->
+  <div class="grid">
+    <div class="sec" id="track"><span class="br">&lt;</span><h2>Race Track</h2><span class="br">/&gt;</span><span class="hint">position = % of a branch's bookings delivered</span><span class="rule"></span></div>
+    <div class="tile s6"><div class="finish-note">START → → → → FINISH 🏁</div><div id="race"></div></div>
+    <div class="tile s4"><div class="lab">Where every car sits right now</div><div class="vbars" id="stages" style="margin-top:6px"></div></div>
+    <div class="tile s2 mint"><div class="lab">⚡ Fastest deliveries</div><div id="fastest" style="margin-top:8px"></div></div>
+  </div>
+
+  <!-- LEADERBOARD -->
+  <div class="grid">
+    <div class="sec" id="lead"><span class="br">&lt;</span><h2>Leaderboards</h2><span class="br">/&gt;</span><span class="hint">points reward outcomes, not activity</span><span class="rule"></span></div>
+    <div class="tile s6">
+      <div class="seg" id="lbseg"><button class="on" data-v="ind">🧑 Racers</button><button data-v="dep">👥 Departments</button><button data-v="br">🏢 Branches</button></div>
+      <div id="lbbody"></div>
+    </div>
+  </div>
+
+  <!-- QUESTS -->
+  <div class="grid">
+    <div class="sec" id="quest"><span class="br">&lt;</span><h2>Quests &amp; Boss</h2><span class="br">/&gt;</span><span class="hint">team goals from live activity</span><span class="rule"></span></div>
+    <div id="quests" class="subgrid c2"></div>
+    <div class="tile s6 mint">
+      <div class="lab" style="color:var(--red)">👹 Weekly Boss — “The Bottleneck”</div>
+      <p class="muted" style="margin:6px 0 0">Branches damage the boss by pushing cars invoice → delivery with no escalations. Damage = clean deliveries.</p>
+      <div class="hp" id="bosshpwrap"><i id="bosshp"></i></div>
+      <div id="bossmeta"></div>
+    </div>
+  </div>
+
+  <!-- ANTI-GAMING -->
+  <div class="grid">
+    <div class="sec" id="anti"><span class="br">&lt;</span><h2>Anti-Gaming</h2><span class="br">/&gt;</span><span class="hint">why it can't be farmed</span><span class="rule"></span></div>
+    <div class="tile s4">
+      <div class="legend"><span><i style="background:var(--good)"></i>Scored milestone</span><span><i style="background:var(--amber)"></i>Doc component</span><span><i style="background:#9aa6b2"></i>Noise — 0 pts</span></div>
+      <div id="audit"></div>
+    </div>
+    <div class="tile s2 acc"><div class="lab">Race Engineer</div><p class="narr" style="margin-top:8px;color:#fff">“The biggest pile in the log is just <b>logins</b>. It pays <b>nothing</b>.”</p><div class="kpi-led" id="kNoise2" data-t="0" style="color:#fff;margin-top:12px">0</div><div class="kpi-cap" style="color:#c8f0ea">of all events = noise</div></div>
+    <div id="guards" class="subgrid c3"></div>
+  </div>
+
+  <!-- RULES -->
+  <div class="grid">
+    <div class="sec" id="rules"><span class="br">&lt;</span><h2>Scoring</h2><span class="br">/&gt;</span><span class="hint">the loop + the ≤20 scored actions</span><span class="rule"></span></div>
+    <div id="loop" class="subgrid c2"></div>
+    <div class="tile s6" style="overflow-x:auto"><div class="lab" style="margin-bottom:10px">The ≤20 scored actions</div><div id="acttable"></div>
+      <p class="muted" style="font-size:.78rem;margin-top:10px">* derived milestone — computed from the raw log, not a single action code.</p></div>
+    <div class="foot">CARVERSE Grand Prix · data: May–Jun 2026 event log · every number computed by scoring_engine.py</div>
+  </div>
+</div>
+
+<script>
+const DATA = {"summary": {"events": 170162, "bookings": 3800, "delivered": 1578, "distinct": 3347, "scored": 16, "noise_pct": 78, "users": 408, "branches": 24, "cancelled": 472}, "branch_race": [{"name": "YESHWANTHAPURA", "prog": 68.2, "cars": 22, "points": 9284}, {"name": "YELAHANKA", "prog": 49.0, "cars": 398, "points": 106850}, {"name": "CHIKKABALLAPURA NEXA", "prog": 47.8, "cars": 46, "points": 11272}, {"name": "NAGARABHAVI", "prog": 46.8, "cars": 363, "points": 94932}, {"name": "HOSKOTE", "prog": 44.9, "cars": 274, "points": 75771}, {"name": "HESARGHATTA", "prog": 44.8, "cars": 29, "points": 8110}, {"name": "DODDANEKKUNDI", "prog": 42.7, "cars": 363, "points": 86724}, {"name": "CHIKKABALLAPURA", "prog": 42.6, "cars": 162, "points": 41383}, {"name": "VARTHUR", "prog": 42.1, "cars": 299, "points": 72466}, {"name": "DEVANAHALLI NEXA", "prog": 41.8, "cars": 79, "points": 16654}, {"name": "HCROSS", "prog": 40.8, "cars": 49, "points": 10776}, {"name": "OORGAUMPET", "prog": 40.5, "cars": 37, "points": 9028}], "stages": [{"key": "PRE-BOOKING", "label": "Enquiry", "count": 68, "color": "#86b6ef"}, {"key": "PENDING-BOOKING", "label": "Booked", "count": 964, "color": "#5598e7"}, {"key": "IBNA", "label": "Invoice & Finance", "count": 261, "color": "#2a78d6"}, {"key": "ABNR", "label": "Approvals & Regn", "count": 88, "color": "#eda100"}, {"key": "RBND", "label": "Ready", "count": 122, "color": "#1baf7a"}, {"key": "DELIVERED", "label": "Delivered", "count": 1578, "color": "#0a9d8e"}, {"key": "DORMANT", "label": "Dormant", "count": 247, "color": "#9aa6b2"}, {"key": "CANCELLED", "label": "Cancelled", "count": 472, "color": "#e34948"}], "individuals": [{"name": "MANOJ KUMAR B R", "dept": "PDI", "points": 76765}, {"name": "JYOTHILAKSHMI C", "dept": "ACCOUNTS", "points": 37439}, {"name": "S HEMAVATHI", "dept": "EDP", "points": 36350}, {"name": "KARTHIK S", "dept": "ACCOUNTS", "points": 35053}, {"name": "ASHWINI RAI MITCHELL", "dept": "CUSTOMER CARE", "points": 30477}, {"name": "SHRUTHI Y R", "dept": "CUSTOMER CARE", "points": 29808}, {"name": "SUNIL JANGIR", "dept": "ACCOUNTS", "points": 29506}, {"name": "SNEHA RAJKUMAR", "dept": "ACCOUNTS", "points": 27747}, {"name": "DHANANJAYAN P", "dept": "EDP", "points": 27627}, {"name": "KRISHAN KUMAR SHARMA", "dept": "ACCOUNTS", "points": 27251}, {"name": "ROHIT SETHI", "dept": "ACCOUNTS", "points": 26504}, {"name": "VIGNESH", "dept": "EDP", "points": 25997}, {"name": "MANJUNATHA H R", "dept": "PDI", "points": 25466}, {"name": "LALIT KUMAR VARMA", "dept": "ACCOUNTS", "points": 21778}, {"name": "VENUGOPAL M", "dept": "ACCOUNTS", "points": 20768}, {"name": "KIRAN KUMAR S", "dept": "ACCOUNTS", "points": 18652}, {"name": "RASHMI PRIYA", "dept": "CUSTOMER CARE", "points": 17143}, {"name": "SHAMSHAD A S", "dept": "EDP", "points": 16381}, {"name": "AJEYA GOWDA", "dept": "SALES", "points": 14895}, {"name": "SALMA BANU", "dept": "EDP", "points": 14891}, {"name": "SAMPATH B", "dept": "SALES", "points": 14821}, {"name": "CHAYA S", "dept": "CUSTOMER CARE", "points": 14714}, {"name": "BABU M", "dept": "EDP", "points": 12910}, {"name": "SHANMUGAM", "dept": "SALES", "points": 12755}, {"name": "ROOPA RANI S", "dept": "EDP", "points": 12617}, {"name": "SUPRABHA RAMDAS NAYAK", "dept": "CUSTOMER CARE", "points": 12479}, {"name": "RAJESH KUMAR", "dept": "ACCOUNTS", "points": 11413}, {"name": "SAHANA C V", "dept": "CUSTOMER CARE", "points": 9868}, {"name": "KALPANA A", "dept": "EDP", "points": 9564}, {"name": "PETER K M", "dept": "SALES", "points": 9492}, {"name": "NAVEEN KUMAR P", "dept": "SALES", "points": 9390}, {"name": "MOHAMMAD MUBARIS", "dept": "SALES", "points": 8487}, {"name": "GANESH SHETTY", "dept": "EDP", "points": 8430}, {"name": "LOHITH", "dept": "EDP", "points": 8032}, {"name": "KIRAN P", "dept": "SALES", "points": 7984}, {"name": "HALAGASAN A", "dept": "SALES", "points": 7832}, {"name": "Jagadeesha M", "dept": "ACCOUNTS", "points": 7752}, {"name": "SANTOSH KUMAR SHETTY", "dept": "FINANCE", "points": 6766}, {"name": "DEVIKA R", "dept": "CUSTOMER CARE", "points": 6440}, {"name": "ANANTHA MURTHY B K", "dept": "FINANCE", "points": 5096}, {"name": "MANJUNATH.M", "dept": "EDP", "points": 5058}, {"name": "GHANAMATHADAYYA G", "dept": "SALES", "points": 4567}, {"name": "SANTHOSHKUMAR KT", "dept": "SALES", "points": 4458}, {"name": "A SANTHOSH KUMAR", "dept": "FINANCE", "points": 4386}, {"name": "DEEPAVALLI C", "dept": "CUSTOMER CARE", "points": 4111}, {"name": "MERCY KUMUDU", "dept": "CUSTOMER CARE", "points": 4035}, {"name": "RAMAMURTHY", "dept": "SALES", "points": 3943}, {"name": "YASHAVANTH KUMAR", "dept": "FINANCE", "points": 3831}, {"name": "VANITHA V", "dept": "EDP", "points": 3799}, {"name": "ABHA MISHRA", "dept": "FINANCE", "points": 3669}, {"name": "RACHANA N R", "dept": "CUSTOMER CARE", "points": 3622}, {"name": "HARI BABU R", "dept": "FINANCE", "points": 3529}, {"name": "G VIJAYAKUMARI", "dept": "EDP", "points": 3422}, {"name": "DEEPTHI", "dept": "CUSTOMER CARE", "points": 3238}, {"name": "HARISH KUMAR K N", "dept": "FINANCE", "points": 3206}, {"name": "K L DILEP", "dept": "FINANCE", "points": 2905}, {"name": "MANJUNATH K", "dept": "SALES", "points": 2817}, {"name": "VIKAS GUPTA", "dept": "SALES", "points": 2704}, {"name": "HANUMANTHAPPA", "dept": "FINANCE", "points": 2686}, {"name": "SANTHOSH KUMAR N", "dept": "SALES", "points": 2639}], "departments": [{"name": "ACCOUNTS", "points": 264362, "color": "#eda100"}, {"name": "EDP", "points": 186593, "color": "#4a3aa7"}, {"name": "SALES", "points": 162923, "color": "#2a78d6"}, {"name": "CUSTOMER CARE", "points": 140337, "color": "#1baf7a"}, {"name": "PDI", "points": 102568, "color": "#e87ba4"}, {"name": "FINANCE", "points": 41118, "color": "#e34948"}], "quests": {"delivered": 1578, "clean": 534, "fast": 296, "docsets": 1029, "top_branch": "YESHWANTHAPURA", "n_branches": 24}, "audit": [{"action": "USER_LOGGED_IN", "count": 27764, "role": "NOISE - 0 pts"}, {"action": "DISCOUNT_UPDATED", "count": 9188, "role": "NOISE - 0 pts"}, {"action": "PDI_INFO_UPDATED", "count": 8428, "role": "NOISE - 0 pts"}, {"action": "PAYMENTS_UPDATED", "count": 7816, "role": "NOISE - 0 pts"}, {"action": "FINANCE_INFO_UPDATED", "count": 5588, "role": "NOISE - 0 pts"}, {"action": "DISCOUNT_ESCALATED", "count": 4937, "role": "NOISE - 0 pts"}, {"action": "FINANCE_STATUS_INFO_UPDATED", "count": 4891, "role": "NOISE - 0 pts"}, {"action": "DEBIT_ADDED", "count": 4532, "role": "NOISE - 0 pts"}, {"action": "DOCUMENTS_OTHER - INVOICE COPY", "count": 2581, "role": "NOISE - 0 pts"}, {"action": "RGISTRATION_CREATED_EDP", "count": 2537, "role": "SCORED milestone"}, {"action": "BOOKING_CREATED", "count": 2205, "role": "SCORED milestone"}, {"action": "DOCUMENTS_PAN", "count": 2203, "role": "doc component (rolls up)"}, {"action": "PAYMENT_ADDED", "count": 2176, "role": "NOISE - 0 pts"}, {"action": "RTO_REQUEST", "count": 2155, "role": "SCORED milestone"}, {"action": "BOOKING_NOTE_ADDED", "count": 2147, "role": "NOISE - 0 pts"}, {"action": "DOCUMENTS_AADHAAR FRONT", "count": 2137, "role": "doc component (rolls up)"}, {"action": "CREDIT_APPROVED", "count": 1984, "role": "SCORED milestone"}, {"action": "BOOKING_CANCELLATION_REQUEST_APPROVED", "count": 1927, "role": "NOISE - 0 pts"}, {"action": "DISCOUNT_APPROVED", "count": 1846, "role": "SCORED milestone"}, {"action": "DISCOUNT_CREATED", "count": 1806, "role": "NOISE - 0 pts"}, {"action": "INVOICE_APPROVED_EDP", "count": 1768, "role": "SCORED milestone"}, {"action": "INVOICE_APPROVED_SALES", "count": 1756, "role": "SCORED milestone"}], "fastest": [{"booking": "KGC|ENQ26000206", "branch": "HOSKOTE-STUDIO", "days": 3.1}, {"booking": "KOT|ENQ26001571", "branch": "HOSKOTE", "days": 3.2}, {"booking": "NGR|ENQ26000974", "branch": "NAGARABHAVI", "days": 3.8}, {"booking": "DVI|ENQ26000359", "branch": "DEVANAHALLI NEXA", "days": 4.0}, {"booking": "YLS|ENQ26000779", "branch": "YELAHANKA", "days": 4.0}, {"booking": "YLS|ENQ26000702", "branch": "YELAHANKA", "days": 4.1}, {"booking": "YSH|ENQ26000144", "branch": "YESHWANTHAPURA", "days": 4.2}, {"booking": "KGC|ENQ26000352", "branch": "HOSKOTE-STUDIO", "days": 4.8}, {"booking": "BSF|ENQ26003067", "branch": "BANASHANKARI", "days": 4.8}, {"booking": "WFR|ENQ26001018", "branch": "MAHADEVAPURA", "days": 4.8}], "actions": [{"tier": "S", "action": "GATEPASS_ISSUED_BY_ACCOUNTS", "means": "Vehicle cleared for delivery", "dept": "ACCOUNTS", "points": 100}, {"tier": "A", "action": "CREDIT_APPROVED", "means": "Payment verified & credited", "dept": "ACCOUNTS", "points": 45}, {"tier": "A", "action": "INVOICE_APPROVED_EDP", "means": "Invoice billing finalized", "dept": "EDP", "points": 45}, {"tier": "A", "action": "INSURANCE_APPROVED_BY_CCM", "means": "Insurance approved", "dept": "CUSTOMER CARE", "points": 40}, {"tier": "A", "action": "REGISTRATION_ADDED", "means": "Registration filed", "dept": "EDP", "points": 40}, {"tier": "B", "action": "BOOKING_CREATED", "means": "Booking created", "dept": "SALES", "points": 30}, {"tier": "B", "action": "DOCUMENT_SET_COMPLETED *", "means": "Full document set completed", "dept": "PDI", "points": 30}, {"tier": "B", "action": "FINANCE_STAGE_CLEARED *", "means": "Finance cleared, booking advanced", "dept": "FINANCE", "points": 30}, {"tier": "B", "action": "DISCOUNT_APPROVED", "means": "Pricing finalized", "dept": "SALES", "points": 25}, {"tier": "B", "action": "INVOICE_APPROVED_SALES", "means": "Sales invoice signed off", "dept": "SALES", "points": 25}, {"tier": "B", "action": "RGISTRATION_APPROVED_SALES", "means": "Registration approved (sales)", "dept": "SALES", "points": 25}, {"tier": "B", "action": "RGISTRATION_CREATED_EDP", "means": "Registration processed (EDP)", "dept": "EDP", "points": 25}, {"tier": "B", "action": "RTO_REQUEST", "means": "RTO registration initiated", "dept": "PDI", "points": 20}, {"tier": "B", "action": "DISPATCH_BY_PDI", "means": "Vehicle inspected & dispatched", "dept": "PDI", "points": 20}, {"tier": "B", "action": "DISPATCH_BY_CCM", "means": "Delivery dispatch coordinated", "dept": "CUSTOMER CARE", "points": 20}, {"tier": "B", "action": "GATEPASS_BY_CCM", "means": "Gatepass cleared (CCM)", "dept": "CUSTOMER CARE", "points": 20}], "dept_colors": {"SALES": "#2a78d6", "CUSTOMER CARE": "#1baf7a", "ACCOUNTS": "#eda100", "EDP": "#4a3aa7", "FINANCE": "#e34948", "PDI": "#e87ba4", "RTO / REGN TEAM": "#eb6834", "ACCESSORIES": "#6d7a74", "TRUEVALUE": "#9aa6b2"}};
+const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)],
+ el=(t,c,h)=>{const e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e},
+ fmt=n=>n.toLocaleString('en-US'),S=DATA.summary;
+
+/* set KPI targets */
+$('#kDelivered .kpi-led').dataset.t=S.delivered;
+$('#kNoise').dataset.t=S.noise_pct; $('#kNoise').dataset.suf='%';
+$('#kNoise2').dataset.t=S.noise_pct; $('#kNoise2').dataset.suf='%';
+$('#kBookings').dataset.t=S.bookings;
+$('#nEvents').textContent=fmt(S.events); $('#nScored').textContent=S.scored;
+
+/* ---- count up (on reveal) ---- */
+function countUp(node){const t=+node.dataset.t,suf=node.dataset.suf||'';if(!t){node.textContent='0'+suf;return;}
+  const dur=1000,t0=performance.now();
+  (function step(now){const p=Math.min(1,(now-t0)/dur),e=1-Math.pow(1-p,3);
+    node.textContent=fmt(Math.round(t*e))+suf;if(p<1)requestAnimationFrame(step);})(t0);}
+
+/* ---- race track ---- */
+const raceEl=$('#race'),maxP=Math.max(...DATA.branch_race.map(b=>b.prog),1);
+DATA.branch_race.forEach(b=>{
+  const lane=el('div','lane');
+  lane.innerHTML=`<div class="lane-name">${b.name}</div><div class="lane-track" style="--p:${(b.prog/(maxP*1.12)*100).toFixed(1)}%"><div class="lane-fill"></div><div class="car">🏎️</div></div><div class="lane-val">${b.prog}%</div>`;
+  const car=lane.querySelector('.car');
+  car.onmouseenter=e=>tip(e,`<b>${b.name}</b><br>${b.prog}% delivered · ${fmt(b.cars)} cars · ${fmt(b.points)} pts`);
+  car.onmousemove=tipMove;car.onmouseleave=hideTip;car.onclick=e=>burst(e.clientX,e.clientY,26);
+  raceEl.appendChild(lane);});
+raceEl.parentElement.classList.add('lanes-host');
+
+const stEl=$('#stages'),maxSt=Math.max(...DATA.stages.map(s=>s.count),1);
+DATA.stages.forEach(s=>{const v=el('div','vbar');
+  v.innerHTML=`<div class="fill" style="--h:${(s.count/maxSt*100).toFixed(1)}%;background:linear-gradient(180deg,${s.color},${s.color}bb)"><span class="n">${fmt(s.count)}</span></div><div class="cap">${s.label}</div>`;
+  v.onmouseenter=e=>tip(e,`<b>${s.label}</b><br>${fmt(s.count)} cars`);v.onmousemove=tipMove;v.onmouseleave=hideTip;
+  stEl.appendChild(v);});
+
+const fEl=$('#fastest');
+DATA.fastest.slice(0,7).forEach(f=>{const r=el('div','frow');
+  r.innerHTML=`<span class="d">${f.days}d</span><span class="b">🏎️ ${f.booking}</span><span class="br">${f.branch}</span>`;fEl.appendChild(r);});
+
+/* ---- leaderboards ---- */
+let lbView='ind',deptFilter='ALL';
+const depts=[...new Set(DATA.individuals.map(d=>d.dept))];
+function renderLB(){const body=$('#lbbody');body.innerHTML='';
+  if(lbView==='ind'){
+    const chips=el('div','chips');
+    ['ALL',...depts].forEach(d=>{const b=el('button','chip'+(d===deptFilter?' on':''),d);b.onclick=()=>{deptFilter=d;renderLB();};chips.appendChild(b);});
+    body.appendChild(chips);
+    const list=DATA.individuals.filter(d=>deptFilter==='ALL'||d.dept===deptFilter);
+    const top3=list.slice(0,3),medals=['🥇','🥈','🥉'],order=[1,0,2];
+    const pod=el('div','podium');
+    order.forEach(i=>{const p=top3[i];if(!p)return;const d=el('div',`pod p${i+1}`);
+      d.innerHTML=`<div class="m">${medals[i]}</div><div class="pn">${p.name}</div><div class="pd">${p.dept}</div><div class="pp">${fmt(p.points)}</div>`;pod.appendChild(d);});
+    body.appendChild(pod);
+    list.slice(3,20).forEach((p,i)=>{const r=el('div','lrow');
+      r.innerHTML=`<span class="rk">${i+4}</span><span class="nm">${p.name}</span><span class="dp">${p.dept}</span><span class="pt">${fmt(p.points)}</span>`;body.appendChild(r);});
+  }else{
+    const rows=lbView==='dep'?DATA.departments.map(d=>({l:d.name,v:d.points,c:d.color}))
+      :DATA.branch_race.slice().sort((a,b)=>b.points-a.points).map(b=>({l:b.name,v:b.points,c:'#0a9d8e'}));
+    const max=Math.max(...rows.map(r=>r.v),1),wrap=el('div');wrap.style.marginTop='16px';
+    rows.forEach(r=>{const h=el('div','hbar');
+      h.innerHTML=`<div class="hl">${r.l}</div><div class="htrack"><div class="hfill" style="--w:${(r.v/max*100).toFixed(1)}%;background:${r.c}"><span>${fmt(r.v)}</span></div></div>`;wrap.appendChild(h);});
+    body.appendChild(wrap);requestAnimationFrame(()=>wrap.classList.add('in'));
+    if(lbView==='dep'){const c=el('div');c.style.cssText='margin-top:16px;padding:14px;background:var(--mint);border-radius:12px;font-size:.86rem;line-height:1.5';
+      c.innerHTML='💡 <b>Finance scores lowest by design.</b> The raw data has no clean FINANCE_APPROVED action — only FINANCE_INFO_UPDATED (effort). Finance scores only when a booking actually clears the stage.';body.appendChild(c);}
+  }}
+$$('#lbseg button').forEach(b=>b.onclick=()=>{$('#lbseg .on').classList.remove('on');b.classList.add('on');lbView=b.dataset.v;renderLB();});
+renderLB();
+
+/* ---- quests ---- */
+const Q=DATA.quests,QS=[["🏁 Checkered Flag","Deliver 1,500 vehicles",Q.delivered,1500],
+["✨ Clean Run","Deliver 800 cars with ZERO rework loops",Q.clean,800],
+["⚡ Speed Demon","Deliver 600 cars within 14 days",Q.fast,600],
+["📑 Paperwork Pro","Complete 1,000 full document sets",Q.docsets,1000]];
+const qEl=$('#quests');
+QS.forEach(([t,d,v,g])=>{const pct=Math.min(v/g,1),done=pct>=1,q=el('div','tile quest');
+  q.innerHTML=`<div class="qt">${t}<span class="${done?'done':''}">${done?'✅ CLEARED':''}</span></div><div class="qd">${d}</div><div class="qbar"><i style="--w:${(pct*100).toFixed(1)}%"></i></div><div class="qmeta"><span><b>${fmt(v)}</b> / ${fmt(g)}</span><span>${Math.round(pct*100)}%</span></div>`;
+  qEl.appendChild(q);});
+const bossHP=2000,dmg=Q.clean;
+$('#bosshp').style.setProperty('--w',Math.min(dmg/bossHP*100,100).toFixed(1)+'%');
+$('#bossmeta').innerHTML=`<span class="pill">💥 Damage: ${fmt(dmg)}</span><span class="pill">❤️ HP: ${fmt(Math.max(bossHP-dmg,0))}/${fmt(bossHP)}</span><span class="pill">🏆 ${Q.top_branch}</span><span class="pill">⚔️ ${Q.n_branches} branches</span>`;
+
+/* ---- anti-gaming ---- */
+const aEl=$('#audit'),colOf=r=>r==='SCORED milestone'?'var(--good)':r==='doc component (rolls up)'?'var(--amber)':'#9aa6b2';
+const maxA=Math.sqrt(Math.max(...DATA.audit.map(a=>a.count)));
+DATA.audit.slice(0,14).forEach(a=>{const h=el('div','hbar'),w=Math.sqrt(a.count)/maxA*100;
+  h.innerHTML=`<div class="hl mono" style="font-size:.72rem">${a.action.length>22?a.action.slice(0,21)+'…':a.action}</div><div class="htrack"><div class="hfill" style="--w:${w.toFixed(1)}%;background:${colOf(a.role)}"><span style="color:${a.role==='NOISE - 0 pts'?'#3a4540':'#fff'}">${fmt(a.count)}</span></div></div>`;
+  const tr=h.querySelector('.htrack');tr.onmouseenter=e=>tip(e,`<b>${a.action}</b><br>${fmt(a.count)} events · ${a.role}`);tr.onmousemove=tipMove;tr.onmouseleave=hideTip;
+  aEl.appendChild(h);});
+const GU=[["Milestones only","Updates, logins, notes = 0 pts. Only outcomes that move a booking forward score."],
+["Once per booking","Each milestone scores once per car — repeating it 50× does nothing."],
+["Delivery escrow","40% of points are held until the car actually delivers."],
+["Net progress","Cancelled (−50 pts) and dormant bookings reverse points."],
+["Rework penalty","Escalation loops shrink the clean-multiplier to 0.6×."],
+["Co-op payout","Delivery bonus splits across depts — you can't win solo."]];
+const gEl=$('#guards');GU.forEach(([t,d],i)=>{const g=el('div','tile guard');g.innerHTML=`<div class="gn"><b>${i+1}.</b>${t}</div><p>${d}</p>`;gEl.appendChild(g);});
+
+/* ---- rules ---- */
+const LP=["A milestone fires → the racer, their department AND their branch all score.",
+"Speed × Clean multipliers reward fast, rework-free movement.",
+"On DELIVERY, escrow releases and a co-op bonus splits across every department that touched the car.",
+"Weekly Branch league + Boss battles reset the race so no single star runs away with it."];
+const lEl=$('#loop');LP.forEach((t,i)=>{const s=el('div','tile step');s.innerHTML=`<div class="num">${i+1}</div><p>${t}</p>`;lEl.appendChild(s);});
+$('#acttable').innerHTML=`<table><thead><tr><th>Tier</th><th>Action</th><th>Means</th><th>Dept</th><th style="text-align:right">Pts</th></tr></thead><tbody>${
+ DATA.actions.map(a=>`<tr><td><span class="tier t${a.tier}">${a.tier}</span></td><td class="mono">${a.action}</td><td>${a.means}</td><td class="muted">${a.dept}</td><td class="pts">${a.points}</td></tr>`).join('')}</tbody></table>`;
+
+/* ---- reveal on scroll ---- */
+const io=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){
+  e.target.classList.add('in');
+  $$('.kpi-led[data-t]',e.target).forEach(countUp);
+  if(e.target.querySelector&&e.target.querySelector('.car'))
+    $$('.lane-track',e.target).forEach((t,i)=>setTimeout(()=>t.style.transitionDelay=(i*.07)+'s',0));
+  io.unobserve(e.target);}});},{threshold:.18});
+$$('.tile').forEach(t=>io.observe(t));
+
+/* ---- nav active + smooth ---- */
+const secs=['hero','track','lead','quest','anti','rules'];
+const navA=id=>$$('.navlinks a').forEach(a=>a.classList.toggle('on',a.getAttribute('href')==='#'+id));
+const io2=new IntersectionObserver((es)=>es.forEach(e=>{if(e.isIntersecting)navA(e.target.id);}),{rootMargin:'-40% 0px -55% 0px'});
+secs.forEach(id=>{const n=document.getElementById(id);if(n)io2.observe(n);});
+
+/* ---- live session clock ---- */
+const t0=Date.now();setInterval(()=>{const s=Math.floor((Date.now()-t0)/1000);
+  $('#clock').textContent=String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');},1000);
+
+/* ---- tooltip ---- */
+const tipEl=$('#tip');let tHTML='';
+function tip(e,h){if(h!=null)tHTML=h;tipEl.innerHTML=tHTML;tipEl.style.opacity=1;tipMove(e);}
+function tipMove(e){tipEl.style.left=Math.min(e.clientX+14,innerWidth-244)+'px';tipEl.style.top=(e.clientY+16)+'px';}
+function hideTip(){tipEl.style.opacity=0;}
+
+/* ---- confetti ---- */
+const cv=$('#confetti'),cx=cv.getContext('2d');let parts=[];
+function rs(){cv.width=innerWidth;cv.height=innerHeight;}rs();addEventListener('resize',rs);
+const CL=['#0a9d8e','#eda100','#e34948','#2a78d6','#e87ba4','#151b18'];
+function burst(x,y,n=50){for(let i=0;i<n;i++)parts.push({x,y,vx:(Math.random()-.5)*10,vy:Math.random()*-11-3,g:.42,r:Math.random()*5+3,c:CL[i%CL.length],life:75,rot:Math.random()*6,vr:(Math.random()-.5)*.4});}
+(function loop(){cx.clearRect(0,0,cv.width,cv.height);parts=parts.filter(p=>p.life>0);
+  parts.forEach(p=>{p.vy+=p.g;p.x+=p.vx;p.y+=p.vy;p.life--;p.rot+=p.vr;cx.save();cx.translate(p.x,p.y);cx.rotate(p.rot);
+    cx.globalAlpha=Math.min(1,p.life/22);cx.fillStyle=p.c;cx.fillRect(-p.r/2,-p.r/2,p.r,p.r*1.5);cx.restore();});
+  requestAnimationFrame(loop);})();
+$('#kDelivered').onclick=e=>burst(e.clientX,e.clientY,60);
+setTimeout(()=>burst(innerWidth/2,150,70),700);
+</script>
+</body>
+</html>
